@@ -2,7 +2,8 @@
  (name aoc202301)
  (modules solution)
  (libraries aoc)
- (inline_tests)
+ (inline_tests
+  (deps test.txt))
  (preprocess
   (pps ppx_expect)))
 

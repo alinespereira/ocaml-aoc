@@ -13,3 +13,5 @@ let read_lines filename =
        in
        loop [])
 ;;
+
+let split_lines = String.split_on_char '\n'
