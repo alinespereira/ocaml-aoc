@@ -1,0 +1,12 @@
+(library
+ (name aoc202301)
+ (modules solution)
+ (libraries aoc)
+ (inline_tests)
+ (preprocess
+  (pps ppx_expect)))
+
+(executable
+ (name main)
+ (modules main)
+ (libraries aoc202301))

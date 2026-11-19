@@ -1,0 +1,9 @@
+(executable
+ (public_name aoc)
+ (name main)
+ (libraries aoc))
+
+(executable
+ (name new_day)
+ (modules new_day)
+ (libraries unix))
