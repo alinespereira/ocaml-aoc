@@ -2,7 +2,7 @@
 
 (library
  (name aoc)
- (libraries base)
+ (libraries base str)
  (flags
   (:standard -w +9+39))
  (preprocess
