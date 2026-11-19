@@ -1,6 +1,7 @@
 (executable
  (public_name aoc)
  (name main)
+ (modules main)
  (libraries aoc))
 
 (executable
