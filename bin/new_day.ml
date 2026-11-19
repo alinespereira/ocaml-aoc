@@ -32,6 +32,15 @@ let write_file path contents =
     (fun () -> output_string channel contents)
 ;;
 
+(* Aplica o .ocamlformat do projeto aos arquivos gerados. *)
+let format_files paths =
+  let command =
+    String.concat " " ("ocamlformat --inplace" :: List.map Filename.quote paths)
+  in
+  if Sys.command command <> 0
+  then prerr_endline "Aviso: ocamlformat falhou"
+;;
+
 let parse_number label value =
   match int_of_string_opt value with
   | Some number -> number
@@ -92,7 +101,8 @@ let%%expect_test "AoC %d: Day %02d" =
       year
       day
   in
-  write_file (Filename.concat target "solution.ml") solution;
+  let solution_path = Filename.concat target "solution.ml" in
+  write_file solution_path solution;
   let input_path = relative_dir ^ "/input.txt" in
   let main =
     Printf.sprintf
@@ -100,12 +110,9 @@ let%%expect_test "AoC %d: Day %02d" =
   let input =
     Aoc.Common.Input.read_lines "%s" |> String.concat "\n"
   in
-
-  Printf.printf "Part 1: %%s\n"
-    (Aoc%d%02d.Solution.solve_part_one input);
-
-  Printf.printf "Part 2: %%s\n"
-    (Aoc%d%02d.Solution.solve_part_two input)
+  Printf.printf "Part 1: %%s\n" (Aoc%d%02d.Solution.solve_part_one input);
+  Printf.printf "Part 2: %%s\n" (Aoc%d%02d.Solution.solve_part_two input)
+;;
 |}
       input_path
       year
@@ -113,8 +120,10 @@ let%%expect_test "AoC %d: Day %02d" =
       year
       day
   in
-  write_file (Filename.concat target "main.ml") main;
+  let main_path = Filename.concat target "main.ml" in
+  write_file main_path main;
   write_file (Filename.concat target "input.txt") "";
   write_file (Filename.concat target "test.txt") "";
+  format_files [ solution_path; main_path ];
   Printf.printf "Criado: %s\n" relative_dir
 ;;
