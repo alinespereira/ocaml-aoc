@@ -3,7 +3,7 @@
  (modules solution)
  (libraries aoc)
  (inline_tests
-  (deps test.txt))
+  (deps test.txt test-2.txt))
  (preprocess
   (pps ppx_expect)))
 
