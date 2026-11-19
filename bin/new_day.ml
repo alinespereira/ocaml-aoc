@@ -37,8 +37,7 @@ let format_files paths =
   let command =
     String.concat " " ("ocamlformat --inplace" :: List.map Filename.quote paths)
   in
-  if Sys.command command <> 0
-  then prerr_endline "Aviso: ocamlformat falhou"
+  if Sys.command command <> 0 then prerr_endline "Aviso: ocamlformat falhou"
 ;;
 
 let parse_number label value =
