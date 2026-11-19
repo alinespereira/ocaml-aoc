@@ -57,7 +57,8 @@ let () =
  (name aoc%d%02d)
  (modules solution)
  (libraries aoc)
- (inline_tests)
+ (inline_tests
+  (deps test.txt))
  (preprocess
   (pps ppx_expect)))
 
@@ -73,12 +74,23 @@ let () =
   in
   write_file (Filename.concat target "dune") dune_file;
   let solution =
-    {|let solve_part_one (_input : string) : string =
+    Printf.sprintf
+      {ocaml|let solve_part_one (_input : string) : string =
   failwith "TODO"
 
 let solve_part_two (_input : string) : string =
   failwith "TODO"
-|}
+
+let%%expect_test "AoC %d: Day %02d" =
+  let input = Aoc.Common.Input.read_lines "test.txt" |> String.concat "\n" in
+  Printf.printf "Part 1: %%s\n" (solve_part_one input);
+  [%%expect {| Part 1: |}];
+  Printf.printf "Part 2: %%s\n" (solve_part_two input);
+  [%%expect {| Part 2: |}]
+;;
+|ocaml}
+      year
+      day
   in
   write_file (Filename.concat target "solution.ml") solution;
   let input_path = relative_dir ^ "/input.txt" in
