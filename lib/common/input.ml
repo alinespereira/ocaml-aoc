@@ -9,7 +9,7 @@ let read_lines filename =
        let rec loop lines =
          match input_line channel with
          | line -> loop (line :: lines)
-         | exception End_of_file -> List.rev lines
+         | exception End_of_file -> List.rev lines |> String.concat "\n"
        in
        loop [])
 ;;

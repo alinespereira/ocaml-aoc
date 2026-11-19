@@ -91,7 +91,7 @@ let solve_part_two (_input : string) : string =
   failwith "TODO"
 
 let%%expect_test "AoC %d: Day %02d" =
-  let input = Aoc.Common.Input.read_lines "test.txt" |> String.concat "\n" in
+  let input = Aoc.Common.Input.read_lines "test.txt" in
   Printf.printf "Part 1: %%s\n" (solve_part_one input);
   [%%expect {| Part 1: |}];
   Printf.printf "Part 2: %%s\n" (solve_part_two input);
@@ -108,7 +108,7 @@ let%%expect_test "AoC %d: Day %02d" =
     Printf.sprintf
       {|let () =
   let input =
-    Aoc.Common.Input.read_lines "%s" |> String.concat "\n"
+    Aoc.Common.Input.read_lines "%s"
   in
   Printf.printf "Part 1: %%s\n" (Aoc%d%02d.Solution.solve_part_one input);
   Printf.printf "Part 2: %%s\n" (Aoc%d%02d.Solution.solve_part_two input)
