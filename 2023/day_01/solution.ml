@@ -32,6 +32,7 @@ let replace_numbers s =
     then acc
     else (
       let rest, piece =
+        let init, rest = String.cut_first 1 s in
         match
           List.find_map
             (fun num ->
@@ -39,10 +40,8 @@ let replace_numbers s =
                Option.map (fun digit -> rest, digit) (as_digit init))
             numbers
         with
-        | Some found -> found
-        | None ->
-          let init, rest = String.cut_first 1 s in
-          rest, init
+        | Some (_, digit) -> rest, digit
+        | None -> rest, init
       in
       loop rest (acc ^ piece))
   in
