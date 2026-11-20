@@ -134,9 +134,9 @@ let%expect_test "AoC 2023: Day 03 - expand" =
   |> print_endline;
   [%expect
     {|
-    { Solution.row = 0; col = 5 }
-    { Solution.row = 0; col = 6 }
-    { Solution.row = 0; col = 7 }
+    { Solution.row = 0; col = 0 }
+    { Solution.row = 0; col = 1 }
+    { Solution.row = 0; col = 2 }
     |}]
 ;;
 
