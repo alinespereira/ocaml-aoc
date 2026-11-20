@@ -30,16 +30,9 @@ let parse_draws (draws : string) : draw list =
   List.map parse_draw draws
 ;;
 
-let parse_game (game : string) : game =
-  game
-  |> String.split_first ~sep:": "
-  |> Option.map (fun (game, draws) ->
-    game
-    |> String.split_last ~sep:" "
-    |> Option.map (fun (_, id) ->
-      { id = id |> int_of_string; draws = parse_draws draws })
-    |> Option.get)
-  |> Option.get
+let parse_game (line : string) : game =
+  Scanf.sscanf line "Game %d: %[^\n]" (fun id draws ->
+    { id; draws = parse_draws draws })
 ;;
 
 let max_red = 12
@@ -48,34 +41,26 @@ let max_blue = 14
 
 let valid_draw
       ?(max_red = max_red)
-      ?(max_red = max_green)
-      ?(max_red = max_blue)
-      draw
+      ?(max_green = max_green)
+      ?(max_blue = max_blue)
+      { red; green; blue }
   =
-  let { red; green; blue } = draw in
   red <= max_red && green <= max_green && blue <= max_blue
 ;;
 
-let possible_game
-      ?(max_red = max_red)
-      ?(max_red = max_green)
-      ?(max_red = max_blue)
-      game
-  =
-  let { draws; _ } = game in
-  List.for_all valid_draw draws
+let possible_game ?max_red ?max_green ?max_blue { draws; _ } =
+  List.for_all (valid_draw ?max_red ?max_green ?max_blue) draws
 ;;
 
-let minimum_set game =
-  let { draws; _ } = game in
-  { red =
-      List.map (fun { red; _ } -> red) draws |> List.fold_left max Int.min_int
-  ; green =
-      List.map (fun { green; _ } -> green) draws
-      |> List.fold_left max Int.min_int
-  ; blue =
-      List.map (fun { blue; _ } -> blue) draws |> List.fold_left max Int.min_int
-  }
+let minimum_set { draws; _ } =
+  List.fold_left
+    (fun acc d ->
+       { red = max acc.red d.red
+       ; green = max acc.green d.green
+       ; blue = max acc.blue d.blue
+       })
+    { red = 0; green = 0; blue = 0 }
+    draws
 ;;
 
 let power game =
@@ -84,7 +69,10 @@ let power game =
 ;;
 
 let parse_input (input : string) : game list =
-  input |> Input.split_lines |> List.map parse_game
+  input
+  |> Input.split_lines
+  |> List.filter (fun line -> line <> "")
+  |> List.map parse_game
 ;;
 
 let solve_part_one (input : string) : string =
