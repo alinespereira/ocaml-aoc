@@ -31,17 +31,12 @@ let replace_numbers s =
     if s = ""
     then acc
     else (
-      let rest, piece =
-        let init, rest = String.cut_first 1 s in
-        match
-          List.find_map
-            (fun num ->
-               let init, rest = String.cut_first (String.length num) s in
-               Option.map (fun digit -> rest, digit) (as_digit init))
-            numbers
-        with
-        | Some (_, digit) -> rest, digit
-        | None -> rest, init
+      let init, rest = String.cut_first 1 s in
+      let piece =
+        List.find_map
+          (fun num -> as_digit (fst (String.cut_first (String.length num) s)))
+          numbers
+        |> Option.value ~default:init
       in
       loop rest (acc ^ piece))
   in
