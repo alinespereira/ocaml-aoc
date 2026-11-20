@@ -22,10 +22,10 @@ let parse_line (row : int) (input : string) : number list =
     | [] -> acc
     | _ ->
       let input =
-        input |> List.drop_while (fun (i, c) -> not (Predicate.is_digit c))
+        input |> List.drop_while (fun (_, c) -> not (Predicate.is_digit c))
       in
       let digits =
-        input |> List.take_while (fun (i, c) -> Predicate.is_digit c)
+        input |> List.take_while (fun (_, c) -> Predicate.is_digit c)
       in
       let len = List.length digits in
       if len <= 0
@@ -41,7 +41,7 @@ let parse_line (row : int) (input : string) : number list =
         let col = digits |> List.map fst |> List.hd in
         let acc = { pos = { row; col }; value; len } :: acc in
         let input =
-          input |> List.drop_while (fun (i, c) -> Predicate.is_digit c)
+          input |> List.drop_while (fun (_, c) -> Predicate.is_digit c)
         in
         loop input acc)
   in
@@ -53,20 +53,20 @@ let parse_numbers (input : string) : number list =
   List.mapi parse_line lines |> List.concat
 ;;
 
-let find_symbols (input : string) : position list =
+let default_symbols ch = not (Predicate.is_digit ch || ch = '.')
+
+let find_symbols ?(only = default_symbols) (input : string) : position list =
   Input.split_lines input
   |> List.map String.to_seq
   |> List.map List.of_seq
   |> List.mapi (fun row chars ->
     List.mapi (fun col ch -> ch, { row; col }) chars)
   |> List.concat
-  |> List.filter_map (function
-    | ch, _ when Predicate.is_digit ch || ch = '.' -> None
-    | _, pos -> Some pos)
+  |> List.filter_map (fun (ch, pos) -> if only ch then Some pos else None)
 ;;
 
-let parse_engine (input : string) : number list * position list =
-  parse_numbers input, find_symbols input
+let parse_engine ?only (input : string) : number list * position list =
+  parse_numbers input, find_symbols ?only input
 ;;
 
 let expand_pos ({ pos; len; _ } : number) : position list =
@@ -114,7 +114,7 @@ let solve_part_one (input : string) : string =
 ;;
 
 let solve_part_two (input : string) : string =
-  let numbers, symbols = parse_engine input in
+  let numbers, symbols = parse_engine ~only:(Char.equal '*') input in
   symbols
   |> List.filter_map (as_gear numbers)
   |> List.map (fun ({ value = v1; _ }, { value = v2; _ }) -> v1 * v2)
@@ -155,7 +155,7 @@ let%expect_test "AoC 2023: Day 03 - expand" =
     {|
     { Solution.row = 0; col = 5 }
     { Solution.row = 0; col = 6 }
-    { Solution.row = 0; col = 7 }    
+    { Solution.row = 0; col = 7 }
     |}]
 ;;
 
