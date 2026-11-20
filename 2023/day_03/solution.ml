@@ -96,8 +96,15 @@ let adjacent (number : number) (symbol : position) : bool =
     (neighbourhood symbol)
 ;;
 
+let as_gear (numbers : number list) (symbol : position)
+  : (number * number) option
+  =
+  match numbers |> List.filter (fun number -> adjacent number symbol) with
+  | [ number_1; number_2 ] -> Some (number_1, number_2)
+  | _ -> None
+;;
+
 let solve_part_one (input : string) : string =
-  let input = Aoc.Common.Input.read_lines "test.txt" in
   let numbers, symbols = parse_engine input in
   numbers
   |> List.filter (fun number -> List.exists (adjacent number) symbols)
@@ -106,7 +113,14 @@ let solve_part_one (input : string) : string =
   |> string_of_int
 ;;
 
-let solve_part_two (_input : string) : string = failwith "TODO"
+let solve_part_two (input : string) : string =
+  let numbers, symbols = parse_engine input in
+  symbols
+  |> List.filter_map (as_gear numbers)
+  |> List.map (fun ({ value = v1; _ }, { value = v2; _ }) -> v1 * v2)
+  |> List.fold_left ( + ) 0
+  |> string_of_int
+;;
 
 let%expect_test "AoC 2023: Day 03 - parse_input" =
   let input = Aoc.Common.Input.read_lines "test.txt" in
