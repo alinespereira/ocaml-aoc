@@ -45,7 +45,7 @@ let parse_line (row : int) (input : string) : number list =
         in
         loop input acc)
   in
-  loop input []
+  loop input [] |> List.rev
 ;;
 
 let parse_numbers (input : string) : number list =
@@ -73,27 +73,8 @@ let expand_pos ({ pos; len; _ } : number) : position list =
   List.init len Fun.id |> List.map (fun dx -> { pos with col = pos.col + dx })
 ;;
 
-let up ({ row; col } : position) : position = { row = row - 1; col }
-let down ({ row; col } : position) : position = { row = row + 1; col }
-let left ({ row; col } : position) : position = { row; col = col - 1 }
-let right ({ row; col } : position) : position = { row; col = col + 1 }
-
-let neighbourhood (pos : position) : position list =
-  [ pos |> up |> left
-  ; pos |> up
-  ; pos |> up |> right
-  ; pos |> left
-  ; pos |> right
-  ; pos |> down |> left
-  ; pos |> down
-  ; pos |> down |> right
-  ]
-;;
-
-let adjacent (number : number) (symbol : position) : bool =
-  List.exists
-    (fun neighbour -> List.mem neighbour (expand_pos number))
-    (neighbourhood symbol)
+let adjacent ({ pos; len; _ } : number) ({ row; col } : position) : bool =
+  abs (row - pos.row) <= 1 && col >= pos.col - 1 && col <= pos.col + len
 ;;
 
 let as_gear (numbers : number list) (symbol : position)
@@ -130,16 +111,16 @@ let%expect_test "AoC 2023: Day 03 - parse_input" =
   |> print_endline;
   [%expect
     {|
-    { Solution.pos = { Solution.row = 0; col = 5 }; len = 3; value = 114 }
     { Solution.pos = { Solution.row = 0; col = 0 }; len = 3; value = 467 }
-    { Solution.pos = { Solution.row = 2; col = 6 }; len = 3; value = 633 }
+    { Solution.pos = { Solution.row = 0; col = 5 }; len = 3; value = 114 }
     { Solution.pos = { Solution.row = 2; col = 2 }; len = 2; value = 35 }
+    { Solution.pos = { Solution.row = 2; col = 6 }; len = 3; value = 633 }
     { Solution.pos = { Solution.row = 4; col = 0 }; len = 3; value = 617 }
     { Solution.pos = { Solution.row = 5; col = 7 }; len = 2; value = 58 }
     { Solution.pos = { Solution.row = 6; col = 2 }; len = 3; value = 592 }
     { Solution.pos = { Solution.row = 7; col = 6 }; len = 3; value = 755 }
-    { Solution.pos = { Solution.row = 9; col = 5 }; len = 3; value = 598 }
     { Solution.pos = { Solution.row = 9; col = 1 }; len = 3; value = 664 }
+    { Solution.pos = { Solution.row = 9; col = 5 }; len = 3; value = 598 }
     |}]
 ;;
 
