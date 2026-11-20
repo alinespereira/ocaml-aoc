@@ -1,6 +1,3 @@
-open Base
-open Stdlib
-
 let read_lines filename =
   let channel = open_in filename in
   Fun.protect

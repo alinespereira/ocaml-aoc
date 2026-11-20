@@ -1,5 +1,3 @@
-open Base
-open Stdlib
 open Aoc.Common
 
 type draw =

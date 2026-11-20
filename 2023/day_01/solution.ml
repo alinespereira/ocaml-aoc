@@ -1,11 +1,4 @@
-open Base
-open Stdlib
 open Aoc.Common
-
-let is_digit ch =
-  let code = Char.code ch in
-  Char.code '0' <= code && code <= Char.code '9'
-;;
 
 let numbers =
   [ "one"; "two"; "three"; "four"; "five"; "six"; "seven"; "eight"; "nine" ]
@@ -45,7 +38,7 @@ let replace_numbers s =
 
 let sum_calibrations calibrations =
   calibrations
-  |> List.map (List.filter is_digit)
+  |> List.map (List.filter Predicate.is_digit)
   |> List.filter_map (function
     | [] -> None
     | first :: _ as digits ->
