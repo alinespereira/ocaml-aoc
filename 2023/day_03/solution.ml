@@ -13,7 +13,7 @@ and position =
   }
 [@@deriving show]
 
-let parse_line (row : int) (input : string) =
+let parse_line (row : int) (input : string) : number list =
   let input =
     input |> String.to_seq |> Seq.mapi (fun i c -> i, c) |> List.of_seq
   in
@@ -48,9 +48,25 @@ let parse_line (row : int) (input : string) =
   loop input []
 ;;
 
-let parse_engine (input : string) =
+let parse_engine (input : string) : number list =
   let lines = Input.split_lines input in
   List.mapi parse_line lines |> List.concat
+;;
+
+let expand_number ({ pos; len; _ } : number) : position list =
+  List.init len Fun.id |> List.map (fun dx -> { pos with col = pos.col + dx })
+;;
+
+let find_symbols (input : string) : position list =
+  Input.split_lines input
+  |> List.map String.to_seq
+  |> List.map List.of_seq
+  |> List.mapi (fun row chars ->
+    List.mapi (fun col ch -> ch, { row; col }) chars)
+  |> List.concat
+  |> List.filter_map (function
+    | ch, _ when Predicate.is_digit ch || ch = '.' -> None
+    | _, pos -> Some pos)
 ;;
 
 let solve_part_one (_input : string) : string = failwith "TODO"
@@ -77,10 +93,43 @@ let%expect_test "AoC 2023: Day 03 - parse_input" =
     |}]
 ;;
 
+let%expect_test "AoC 2023: Day 03 - expand" =
+  let input = Aoc.Common.Input.read_lines "test.txt" in
+  parse_engine input
+  |> List.hd
+  |> expand_number
+  |> List.map show_position
+  |> String.concat "\n"
+  |> print_endline;
+  [%expect
+    {|
+    { Solution.row = 0; col = 5 }
+    { Solution.row = 0; col = 6 }
+    { Solution.row = 0; col = 7 }    
+    |}]
+;;
+
+let%expect_test "AoC 2023: Day 03 - find_symbols" =
+  let input = Aoc.Common.Input.read_lines "test.txt" in
+  find_symbols input
+  |> List.map show_position
+  |> String.concat "\n"
+  |> print_endline;
+  [%expect
+    {|
+    { Solution.row = 1; col = 3 }
+    { Solution.row = 3; col = 6 }
+    { Solution.row = 4; col = 3 }
+    { Solution.row = 5; col = 5 }
+    { Solution.row = 8; col = 3 }
+    { Solution.row = 8; col = 5 }
+    |}]
+;;
+
 let%expect_test "AoC 2023: Day 03" =
   let input = Aoc.Common.Input.read_lines "test.txt" in
   Printf.printf "Part 1: %s\n" (solve_part_one input);
-  [%expect {| Part 1: |}];
+  [%expect {| Part 1: 4361 |}];
   Printf.printf "Part 2: %s\n" (solve_part_two input);
-  [%expect {| Part 2: |}]
+  [%expect {| Part 2: 467835 |}]
 ;;
