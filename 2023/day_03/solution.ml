@@ -48,13 +48,9 @@ let parse_line (row : int) (input : string) : number list =
   loop input []
 ;;
 
-let parse_engine (input : string) : number list =
+let parse_numbers (input : string) : number list =
   let lines = Input.split_lines input in
   List.mapi parse_line lines |> List.concat
-;;
-
-let expand_number ({ pos; len; _ } : number) : position list =
-  List.init len Fun.id |> List.map (fun dx -> { pos with col = pos.col + dx })
 ;;
 
 let find_symbols (input : string) : position list =
@@ -69,12 +65,52 @@ let find_symbols (input : string) : position list =
     | _, pos -> Some pos)
 ;;
 
-let solve_part_one (_input : string) : string = failwith "TODO"
+let parse_engine (input : string) : number list * position list =
+  parse_numbers input, find_symbols input
+;;
+
+let expand_pos ({ pos; len; _ } : number) : position list =
+  List.init len Fun.id |> List.map (fun dx -> { pos with col = pos.col + dx })
+;;
+
+let up ({ row; col } : position) : position = { row = row - 1; col }
+let down ({ row; col } : position) : position = { row = row + 1; col }
+let left ({ row; col } : position) : position = { row; col = col - 1 }
+let right ({ row; col } : position) : position = { row; col = col + 1 }
+
+let neighbourhood (pos : position) : position list =
+  [ pos |> up |> left
+  ; pos |> up
+  ; pos |> up |> right
+  ; pos |> left
+  ; pos |> right
+  ; pos |> down |> left
+  ; pos |> down
+  ; pos |> down |> right
+  ]
+;;
+
+let adjacent (number : number) (symbol : position) : bool =
+  List.exists
+    (fun neighbour -> List.mem neighbour (expand_pos number))
+    (neighbourhood symbol)
+;;
+
+let solve_part_one (input : string) : string =
+  let input = Aoc.Common.Input.read_lines "test.txt" in
+  let numbers, symbols = parse_engine input in
+  numbers
+  |> List.filter (fun number -> List.exists (adjacent number) symbols)
+  |> List.map (fun { value; _ } -> value)
+  |> List.fold_left ( + ) 0
+  |> string_of_int
+;;
+
 let solve_part_two (_input : string) : string = failwith "TODO"
 
 let%expect_test "AoC 2023: Day 03 - parse_input" =
   let input = Aoc.Common.Input.read_lines "test.txt" in
-  parse_engine input
+  parse_numbers input
   |> List.map show_number
   |> String.concat "\n"
   |> print_endline;
@@ -95,9 +131,9 @@ let%expect_test "AoC 2023: Day 03 - parse_input" =
 
 let%expect_test "AoC 2023: Day 03 - expand" =
   let input = Aoc.Common.Input.read_lines "test.txt" in
-  parse_engine input
+  parse_numbers input
   |> List.hd
-  |> expand_number
+  |> expand_pos
   |> List.map show_position
   |> String.concat "\n"
   |> print_endline;
