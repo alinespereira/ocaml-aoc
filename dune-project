@@ -19,7 +19,14 @@
  (name aoc)
  (synopsis "A short synopsis")
  (description "A longer description")
- (depends ocaml)
+ (depends
+  ocaml
+  base
+  core
+  angstrom
+  ppx_deriving
+  ppx_enumerate
+  ppx_expect)
  (tags
   ("add topics" "to describe" your project)))
 

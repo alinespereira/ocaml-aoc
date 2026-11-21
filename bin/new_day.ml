@@ -64,7 +64,7 @@ let () =
       {|(library
  (name aoc%d%02d)
  (modules solution)
- (libraries aoc core fmt angstrom)
+ (libraries aoc)
  (inline_tests
   (deps test.txt))
  (preprocess

@@ -1,7 +1,7 @@
 (library
  (name aoc202304)
  (modules solution)
- (libraries aoc core fmt angstrom)
+ (libraries aoc core angstrom)
  (inline_tests
   (deps test.txt))
  (preprocess

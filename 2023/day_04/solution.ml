@@ -8,7 +8,7 @@ type scratchcard =
 [@@deriving show]
 
 let whitespaces = take_while Char.is_whitespace
-let digits = take_while1 Char.is_digit >>| int_of_string
+let digits = take_while1 Char.is_digit >>| Int.of_string
 
 let card =
   let* _ =
@@ -21,9 +21,9 @@ let card =
 ;;
 
 let parse_line (line : string) : scratchcard =
-  match parse_string ~consume:All card line with
+  match parse_string ~consume:All card (String.rstrip line) with
   | Ok v -> v
-  | Error msg -> Fmt.failwith "%s@." msg
+  | Error msg -> failwith msg
 ;;
 
 let winning_numbers ({ winning; ours } : scratchcard) : int =
@@ -42,10 +42,10 @@ let unravel (copies : (int * int) list) : (int * int) list =
     match copies with
     | [] -> List.rev acc
     | curr :: rest ->
-      let cs, ps = curr in
-      let extra, kept = List.split_n rest ps in
-      let extra = List.map ~f:(fun (c, w) -> c + cs, w) extra in
-      loop (List.concat [ extra; kept ]) (curr :: acc)
+      let count, wins = curr in
+      let extra, kept = List.split_n rest wins in
+      let extra = List.map ~f:(fun (c, w) -> c + count, w) extra in
+      loop (extra @ kept) (curr :: acc)
   in
   loop copies []
 ;;
@@ -54,9 +54,8 @@ let solve_part_one (input : string) : string =
   input
   |> String.split_lines
   |> List.map ~f:parse_line
-  |> List.map ~f:score
-  |> List.fold ~init:0 ~f:( + )
-  |> string_of_int
+  |> List.sum (module Int) ~f:score
+  |> Int.to_string
 ;;
 
 let solve_part_two (input : string) : string =
@@ -65,15 +64,14 @@ let solve_part_two (input : string) : string =
   |> List.map ~f:parse_line
   |> List.map ~f:(fun card -> 1, winning_numbers card)
   |> unravel
-  |> List.map ~f:(fun (cs, _) -> cs)
-  |> List.fold ~f:( + ) ~init:0
+  |> List.sum (module Int) ~f:fst
   |> Int.to_string
 ;;
 
 let%expect_test "AoC 2023: Day 04 - parse_line" =
   let line = "Card 1: 41 48 83 86 17 | 83 86  6 31 17  9 48 53" in
   let card = parse_line line in
-  Fmt.pr "%a@." pp_scratchcard card;
+  print_endline (show_scratchcard card);
   [%expect
     {|
     { Solution.winning = [41; 48; 83; 86; 17];

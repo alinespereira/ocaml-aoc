@@ -12,6 +12,12 @@ bug-reports: "https://github.com/username/reponame/issues"
 depends: [
   "dune" {>= "3.24"}
   "ocaml"
+  "base"
+  "core"
+  "angstrom"
+  "ppx_deriving"
+  "ppx_enumerate"
+  "ppx_expect"
   "odoc" {with-doc}
 ]
 build: [
