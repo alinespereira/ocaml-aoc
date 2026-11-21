@@ -55,10 +55,8 @@ let thresholds (time : int) (distance : int) : (int * int) option =
     let hold_max = (-.b +. (delta ** 0.5)) /. (2.0 *. a) in
     match List.sort ~compare:Float.compare [ hold_min; hold_max ] with
     | [ hold_min; hold_max ] ->
-      let hold_min = Float.round_down hold_min |> Int.of_float |> ( + ) 1 in
-      let hold_max =
-        Float.round_up hold_max |> Int.of_float |> Fun.flip ( - ) 1
-      in
+      let hold_min = Float.round_down hold_min |> Int.of_float |> Int.succ in
+      let hold_max = Float.round_up hold_max |> Int.of_float |> Int.pred in
       Some (hold_min, hold_max)
     | _ -> failwith "thresholds: unreachable")
 ;;
