@@ -11,6 +11,8 @@
 
 (maintainers "Aline")
 
+(license MIT)
+
 (package
  (name aoc)
  (synopsis "Advent of Code solutions in OCaml")

@@ -5,6 +5,7 @@ description:
   "Solutions to Advent of Code puzzles, one library per day with inline expect tests."
 maintainer: ["Aline"]
 authors: ["Aline"]
+license: "MIT"
 tags: ["advent of code" "aoc" "puzzles"]
 homepage: "https://github.com/alinespereira/ocaml-aoc"
 bug-reports: "https://github.com/alinespereira/ocaml-aoc/issues"
