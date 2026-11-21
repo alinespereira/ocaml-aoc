@@ -29,14 +29,11 @@ let parse_seed_list (line : string) : int list =
   | _ -> invalid_arg "parse_seed_list: input does not match expected format"
 ;;
 
-let rec parse_ranges_from_seed_list (seeds : int list) : int list =
+let rec parse_seed_intervals (seeds : int list) : (int * int) list =
   match seeds with
-  | first :: length :: rest ->
-    List.init length (fun i -> first + i) @ parse_ranges_from_seed_list rest
+  | start :: length :: rest -> (start, length) :: parse_seed_intervals rest
   | [] -> []
-  | _ ->
-    invalid_arg
-      "parse_ranges_from_seed_list: input does not match expected format"
+  | _ -> invalid_arg "parse_seed_intervals: input does not match expected format"
 ;;
 
 let parse_input (input : string) : int list * (string * map) list =
@@ -81,13 +78,52 @@ let solve_part_one (input : string) : string =
   |> string_of_int
 ;;
 
+(* Maps the interval [start, start + length) through one range. Returns the
+   shifted part that falls inside the range, if any, plus the leftover pieces
+   on either side, which still have to be tried against the other ranges. *)
+let split_interval
+      ((start, length) : int * int)
+      ({ destination; source; length = range_length } : range)
+  : (int * int) option * (int * int) list
+  =
+  let stop = start + length in
+  let lo = max start source in
+  let hi = min stop (source + range_length) in
+  if lo >= hi
+  then None, [ start, length ]
+  else (
+    let mapped = destination + (lo - source), hi - lo in
+    let left = if start < lo then [ start, lo - start ] else [] in
+    let right = if hi < stop then [ hi, stop - hi ] else [] in
+    Some mapped, left @ right)
+;;
+
+(* Like [step], but for intervals: pieces that hit a range are shifted and
+   leave the pending list, so no other range of the same map touches them;
+   pieces that hit no range pass through unchanged. *)
+let step_intervals (intervals : (int * int) list) ({ ranges } : map)
+  : (int * int) list
+  =
+  let mapped, unmapped =
+    List.fold_left
+      (fun (mapped, pending) range ->
+         List.fold_left
+           (fun (mapped, rest) interval ->
+              let hit, leftover = split_interval interval range in
+              Option.to_list hit @ mapped, leftover @ rest)
+           (mapped, [])
+           pending)
+      ([], intervals)
+      ranges
+  in
+  mapped @ unmapped
+;;
+
 let solve_part_two (input : string) : string =
   let seeds, maps = parse_input input in
-  let seeds = parse_ranges_from_seed_list seeds in
   let maps = List.split maps |> snd in
-  seeds
-  |> List.map (fun seed -> traverse seed maps)
-  |> List.fold_left min Int.max_int
+  List.fold_left step_intervals (parse_seed_intervals seeds) maps
+  |> List.fold_left (fun acc (start, _) -> min acc start) Int.max_int
   |> string_of_int
 ;;
 
