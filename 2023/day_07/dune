@@ -1,0 +1,13 @@
+(library
+ (name aoc202307)
+ (modules solution)
+ (libraries aoc)
+ (inline_tests
+  (deps test.txt))
+ (preprocess
+  (pps ppx_expect)))
+
+(executable
+ (name main)
+ (modules main)
+ (libraries aoc202307))
