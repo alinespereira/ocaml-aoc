@@ -1,20 +1,22 @@
 open Core
 open Angstrom
 
-let whitespaces = take_while Char.is_whitespace
-let digits = take_while Char.is_digit
+let sep = take_while (fun c -> Char.equal c ' ' || Char.equal c '\t')
+let digits = take_while1 Char.is_digit
 let label = take_while1 Char.is_alpha
-let line = label *> string ":" *> whitespaces *> sep_by1 whitespaces digits
+let line = label *> string ":" *> sep *> sep_by1 sep digits
 
 let races =
-  let* times = line >>| List.map ~f:Int.of_string in
-  let* distances = line >>| List.map ~f:Int.of_string in
+  let* times = line <* end_of_line >>| List.map ~f:Int.of_string in
+  let* distances = line <* end_of_input >>| List.map ~f:Int.of_string in
   return (times, distances)
 ;;
 
 let single_race =
-  let* time = line >>| String.concat ~sep:"" >>| Int.of_string in
-  let* distance = line >>| String.concat ~sep:"" >>| Int.of_string in
+  let* time = line <* end_of_line >>| String.concat ~sep:"" >>| Int.of_string in
+  let* distance =
+    line <* end_of_input >>| String.concat ~sep:"" >>| Int.of_string
+  in
   return (time, distance)
 ;;
 
@@ -70,10 +72,7 @@ let solve_part_two (input : string) : string =
   let time, distance = parse_input single_race input in
   let result =
     match thresholds time distance with
-    | Some (hold_min, hold_max) ->
-      print_endline @@ Int.to_string hold_min;
-      print_endline @@ Int.to_string hold_max;
-      failwith "not implemented"
+    | Some (hold_min, hold_max) -> hold_max - hold_min + 1
     | None -> 0
   in
   Int.to_string result
@@ -81,8 +80,8 @@ let solve_part_two (input : string) : string =
 
 let%expect_test "AoC 2023: Day 06" =
   let input = Aoc.Common.Input.read_lines "test.txt" in
-  (* Printf.printf "Part 1: %s\n" (solve_part_one input);
-  [%expect {| Part 1: 288 |}]; *)
+  Printf.printf "Part 1: %s\n" (solve_part_one input);
+  [%expect {| Part 1: 288 |}];
   Printf.printf "Part 2: %s\n" (solve_part_two input);
   [%expect {| Part 2: 71503 |}]
 ;;
