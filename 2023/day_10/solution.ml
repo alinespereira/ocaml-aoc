@@ -97,8 +97,42 @@ and infer_connections (field : field) (indices : indices) (neighbour : indices)
   | _ -> Some neighbour
 ;;
 
-let solve_part_one (_input : string) : string = failwith "TODO"
-let solve_part_two (_input : string) : string = failwith "TODO"
+let bfs (field : field) (start : indices) : int =
+  let rec step
+            (field : field)
+            (current : indices)
+            (queue : (indices * int) list)
+            (visited : neighbourhood)
+            (steps : int)
+    : int
+    =
+    match queue with
+    | [] -> steps
+    | (next, steps') :: rest ->
+      let neighbours =
+        find_neighbours field next
+        |> List.filter ~f:(fun neighbour ->
+          not (List.mem visited neighbour ~equal:equal_indices))
+      in
+      let visited = next :: visited in
+      let queue =
+        List.fold
+          ~init:rest
+          ~f:(fun acc index -> (index, steps + 1) :: acc)
+          neighbours
+      in
+      let steps = max steps steps' in
+      step field next queue visited steps
+  in
+  step field start [ start, 0 ] [ start ] 0
+;;
+
+let solve_part_one (input : string) : string =
+  let field = parse_input input in
+  let start = find_start field in
+  bfs field start |> Int.to_string
+;;
+
 
 let%expect_test "AoC 2023: Day 10 - parse_input" =
   let input = Aoc.Common.Input.read_lines "test-1A.txt" in
@@ -205,10 +239,10 @@ let%expect_test "AoC 2023: Day 10 - find_neighbours" =
 (* let%expect_test "AoC 2023: Day 10" =
   let input = Aoc.Common.Input.read_lines "test-1A.txt" in
   Printf.printf "Part 1 (A): %s\n" (solve_part_one input);
-  [%expect {| Part 1 (A): 10 |}];
+  [%expect {| Part 1 (A): 4 |}];
   let input = Aoc.Common.Input.read_lines "test-1B.txt" in
   Printf.printf "Part 1 (B): %s\n" (solve_part_one input);
-  [%expect {| Part 1 (B): 10 |}];
+  [%expect {| Part 1 (B): 8 |}];
   Printf.printf "Part 2: %s\n" (solve_part_two input);
   [%expect {| Part 2: |}]
 ;; *)
