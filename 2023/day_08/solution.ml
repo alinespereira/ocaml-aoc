@@ -71,7 +71,9 @@ let walk
   |> Sequence.fold_until
        ~init:(0, origin)
        ~f:(fun (steps, pos) action ->
-         if cond pos then Stop steps else Continue (steps + 1, step action network pos))
+         if cond pos
+         then Stop steps
+         else Continue (steps + 1, step action network pos))
        ~finish:fst
 ;;
 
@@ -98,9 +100,6 @@ let solve_part_two (input : string) : string =
       String.to_list label |> List.last_exn |> Char.equal 'A')
   in
   let cond label = String.is_suffix label ~suffix:"Z" in
-  (* Simular todos os fantasmas juntos levaria ~10^13 passos no input real.
-     Cada fantasma entra num ciclo cujo comprimento é igual à distância
-     de ..A até o primeiro ..Z, então a resposta é o MMC dessas distâncias. *)
   origins
   |> List.map ~f:(fun origin -> walk actions network origin cond)
   |> List.fold ~init:1 ~f:lcm
