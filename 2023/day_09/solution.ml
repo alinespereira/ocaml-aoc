@@ -15,13 +15,13 @@ let differentiate_once (data : int list) : int list =
 ;;
 
 let differentiate (data : int list) : int list list =
-  let rec loop (data : int list) (acc : int list list) : int list list =
+  let rec loop (acc : int list list) : int list list =
     match acc with
-    | curr :: rest when List.for_all ~f:(Int.equal 0) curr -> acc
-    | curr :: rest -> loop curr (differentiate_once curr :: acc)
-    | [] -> loop (differentiate_once data) (data :: acc)
+    | curr :: _ when List.for_all ~f:(Int.equal 0) curr -> acc
+    | curr :: _ -> loop (differentiate_once curr :: acc)
+    | [] -> acc
   in
-  loop data []
+  loop [ data ]
 ;;
 
 let forward (differences : int list list) : int =
