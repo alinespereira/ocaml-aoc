@@ -63,7 +63,7 @@ let walk
       (actions : actions)
       (network : network)
       (origin : string)
-      (destination : string)
+      (cond : string -> bool)
   : int
   =
   actions
@@ -71,29 +71,12 @@ let walk
   |> Sequence.fold_until
        ~init:(0, origin)
        ~f:(fun (steps, pos) action ->
-         if String.equal pos destination
-         then Stop steps
-         else Continue (steps + 1, step action network pos))
+         if cond pos then Stop steps else Continue (steps + 1, step action network pos))
        ~finish:fst
 ;;
 
-let walk_until
-      (actions : actions)
-      (network : network)
-      (origins : string list)
-      (cond : string -> bool)
-  : int
-  =
-  actions
-  |> Sequence.cycle_list_exn
-  |> Sequence.fold_until
-       ~init:(0, origins)
-       ~f:(fun (steps, positions) action ->
-         if List.for_all positions ~f:cond
-         then Stop steps
-         else Continue (steps + 1, List.map positions ~f:(step action network)))
-       ~finish:fst
-;;
+let rec gcd a b = if b = 0 then a else gcd b (a % b)
+let lcm a b = a / gcd a b * b
 
 type node_list = string list [@@deriving show]
 
@@ -102,8 +85,7 @@ let solve_part_one (input : string) : string =
   let actions = as_actions instructions in
   let network = as_network nodes in
   let origin = "AAA" in
-  let destination = "ZZZ" in
-  walk actions network origin destination |> Int.to_string
+  walk actions network origin (String.equal "ZZZ") |> Int.to_string
 ;;
 
 let solve_part_two (input : string) : string =
@@ -115,8 +97,14 @@ let solve_part_two (input : string) : string =
     |> List.filter ~f:(fun label ->
       String.to_list label |> List.last_exn |> Char.equal 'A')
   in
-  let cond label = String.to_list label |> List.last_exn |> Char.equal 'Z' in
-  walk_until actions network origins cond |> Int.to_string
+  let cond label = String.is_suffix label ~suffix:"Z" in
+  (* Simular todos os fantasmas juntos levaria ~10^13 passos no input real.
+     Cada fantasma entra num ciclo cujo comprimento é igual à distância
+     de ..A até o primeiro ..Z, então a resposta é o MMC dessas distâncias. *)
+  origins
+  |> List.map ~f:(fun origin -> walk actions network origin cond)
+  |> List.fold ~init:1 ~f:lcm
+  |> Int.to_string
 ;;
 
 let%expect_test "AoC 2023: Day 08 - parse_input" =
