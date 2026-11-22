@@ -65,7 +65,7 @@ let () =
  (name aoc%d%02d)
  (modules solution)
  (flags
-  (:standard -w +9+39))
+  (:standard -w +9+27+39))
  (libraries aoc)
  (inline_tests
   (deps test.txt))

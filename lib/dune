@@ -4,7 +4,7 @@
  (name aoc)
  (libraries base str)
  (flags
-  (:standard -w +9+39))
+  (:standard -w +9+27+39))
  (preprocess
   (pps
    ppx_deriving.show
