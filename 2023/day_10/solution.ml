@@ -97,34 +97,24 @@ and infer_connections (field : field) (indices : indices) (neighbour : indices)
   | _ -> Some neighbour
 ;;
 
+(* BFS por camadas: [frontier] guarda as casas a [distance] passos do início.
+   A próxima camada são os vizinhos ainda não visitados da camada atual; as
+   casas entram em [visited] no momento em que são descobertas, então nenhuma
+   é visitada duas vezes. Quando não há mais camada, [distance] é a maior
+   distância alcançada. *)
 let bfs (field : field) (start : indices) : int =
-  let rec step
-            (field : field)
-            (current : indices)
-            (queue : (indices * int) list)
-            (visited : neighbourhood)
-            (steps : int)
-    : int
-    =
-    match queue with
-    | [] -> steps
-    | (next, steps') :: rest ->
-      let neighbours =
-        find_neighbours field next
-        |> List.filter ~f:(fun neighbour ->
-          not (List.mem visited neighbour ~equal:equal_indices))
-      in
-      let visited = next :: visited in
-      let queue =
-        List.fold
-          ~init:rest
-          ~f:(fun acc index -> (index, steps + 1) :: acc)
-          neighbours
-      in
-      let steps = max steps steps' in
-      step field next queue visited steps
+  let rec step (frontier : neighbourhood) visited (distance : int) : int =
+    let next =
+      frontier
+      |> List.concat_map ~f:(find_neighbours field)
+      |> List.dedup_and_sort ~compare:compare_indices
+      |> List.filter ~f:(fun neighbour -> not (Set.mem visited neighbour))
+    in
+    match next with
+    | [] -> distance
+    | _ -> step next (List.fold next ~init:visited ~f:Set.add) (distance + 1)
   in
-  step field start [ start, 0 ] [ start ] 0
+  step [ start ] (Set.Poly.singleton start) 0
 ;;
 
 let solve_part_one (input : string) : string =
@@ -133,6 +123,7 @@ let solve_part_one (input : string) : string =
   bfs field start |> Int.to_string
 ;;
 
+let solve_part_two (_input : string) : string = failwith "TODO"
 
 let%expect_test "AoC 2023: Day 10 - parse_input" =
   let input = Aoc.Common.Input.read_lines "test-1A.txt" in
@@ -236,13 +227,14 @@ let%expect_test "AoC 2023: Day 10 - find_neighbours" =
   [%expect {| Part 1 (C): [Solution.Start] [(1, 2); (2, 1)] |}]
 ;;
 
-(* let%expect_test "AoC 2023: Day 10" =
+let%expect_test "AoC 2023: Day 10 - part 1" =
   let input = Aoc.Common.Input.read_lines "test-1A.txt" in
   Printf.printf "Part 1 (A): %s\n" (solve_part_one input);
   [%expect {| Part 1 (A): 4 |}];
   let input = Aoc.Common.Input.read_lines "test-1B.txt" in
   Printf.printf "Part 1 (B): %s\n" (solve_part_one input);
   [%expect {| Part 1 (B): 8 |}];
-  Printf.printf "Part 2: %s\n" (solve_part_two input);
-  [%expect {| Part 2: |}]
-;; *)
+  let input = Aoc.Common.Input.read_lines "test-1C.txt" in
+  Printf.printf "Part 1 (C): %s\n" (solve_part_one input);
+  [%expect {| Part 1 (C): 4 |}]
+;;
