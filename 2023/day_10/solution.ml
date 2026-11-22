@@ -9,9 +9,9 @@ type tile =
   | SouthWest
   | Ground
   | Start
-[@@deriving eq]
+[@@deriving show, eq]
 
-and field = tile array array [@@deriving show]
+type field = tile array array [@@deriving show]
 
 let as_tile (ch : char) : tile =
   match ch with
@@ -38,7 +38,7 @@ let parse_input (input : string) : field =
   input |> String.split_lines |> List.map ~f:parse_line |> List.to_array
 ;;
 
-let find_start (field : field) : int * int =
+let find_start (field : field) : indices =
   field
   |> Array.find_mapi_exn ~f:(fun i row ->
     Array.find_mapi
@@ -71,9 +71,8 @@ let get_tile (field : field) (indices : indices) =
 ;;
 
 let validate rows cols (indices : indices) : indices option =
-  match indices with
-  | i, j when i < 0 || i >= rows || j < 0 || j >= cols -> None
-  | i, j -> Some (i, j)
+  let i, j = indices in
+  Option.some_if (i >= 0 && i < rows && j >= 0 && j < cols) indices
 ;;
 
 let rec find_neighbours (field : field) (indices : indices) : neighbourhood =
