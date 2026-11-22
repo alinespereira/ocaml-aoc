@@ -117,13 +117,36 @@ let bfs (field : field) (start : indices) : int =
   step [ start ] (Set.Poly.singleton start) 0
 ;;
 
+let dfs (field : field) (start : indices) : neighbourhood =
+  let rec loop (field : field) (current : indices) (path : neighbourhood)
+    : neighbourhood
+    =
+    let neighbours =
+      find_neighbours field current
+      |> List.filter ~f:(fun neighbour ->
+        not (List.mem path neighbour ~equal:equal_indices))
+    in
+    match neighbours with
+    | [] -> path
+    | _ ->
+      List.map neighbours ~f:(fun neighbour ->
+        loop field neighbour (neighbour :: path))
+      |> List.hd_exn
+  in
+  loop field start []
+;;
+
 let solve_part_one (input : string) : string =
   let field = parse_input input in
   let start = find_start field in
   bfs field start |> Int.to_string
 ;;
 
-let solve_part_two (_input : string) : string = failwith "TODO"
+let solve_part_two (input : string) : string =
+  let field = parse_input input in
+  let start = find_start field in
+  dfs field start |> show_neighbourhood
+;;
 
 let%expect_test "AoC 2023: Day 10 - parse_input" =
   let input = Aoc.Common.Input.read_lines "test-1A.txt" in
