@@ -1,6 +1,8 @@
 (library
  (name aoc202304)
  (modules solution)
+ (flags
+  (:standard -w +9+39))
  (libraries aoc core angstrom)
  (inline_tests
   (deps test.txt))
