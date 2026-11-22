@@ -1,0 +1,13 @@
+(library
+ (name aoc202308)
+ (modules solution)
+ (libraries aoc fmt core angstrom)
+ (inline_tests
+  (deps test-1A.txt test-1B.txt test-2.txt))
+ (preprocess
+  (pps ppx_expect ppx_deriving.show)))
+
+(executable
+ (name main)
+ (modules main)
+ (libraries aoc202308))
