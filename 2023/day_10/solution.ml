@@ -63,7 +63,7 @@ let neighbourhood_offset (tile : tile) : offset list =
   | Ground -> []
 ;;
 
-let ( + ) ((i, j) : indices) ((di, dj) : offset) : indices = i + di, j + dj
+let ( +> ) ((i, j) : indices) ((di, dj) : offset) : indices = i + di, j + dj
 
 let get_tile (field : field) (indices : indices) =
   let i, j = indices in
@@ -82,7 +82,7 @@ let rec find_neighbours (field : field) (indices : indices) : neighbourhood =
   let tile = get_tile field indices in
   tile
   |> neighbourhood_offset
-  |> List.map ~f:(fun offset -> indices + offset)
+  |> List.map ~f:(fun offset -> indices +> offset)
   |> List.filter_map ~f:(validate rows cols)
   |> List.filter_map ~f:(infer_connections field indices)
   |> List.sort ~compare:compare_indices
