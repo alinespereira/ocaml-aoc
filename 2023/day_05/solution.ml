@@ -33,7 +33,8 @@ let rec parse_seed_intervals (seeds : int list) : (int * int) list =
   match seeds with
   | start :: length :: rest -> (start, length) :: parse_seed_intervals rest
   | [] -> []
-  | _ -> invalid_arg "parse_seed_intervals: input does not match expected format"
+  | _ ->
+    invalid_arg "parse_seed_intervals: input does not match expected format"
 ;;
 
 let parse_input (input : string) : int list * (string * map) list =
@@ -136,7 +137,7 @@ let%expect_test "AoC 2023: Day 05" =
 ;;
 
 let%expect_test "AoC 2023: Day 05 - steps" =
-  let seed, soil, fertilizer, water, light, temperature, humidity, location =
+  let seed, soil, fertilizer, water, light, temperature, humidity, _location =
     79, 81, 81, 81, 74, 78, 78, 82
   in
   let input = Input.read_lines "test.txt" in

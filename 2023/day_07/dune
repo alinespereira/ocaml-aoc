@@ -1,6 +1,8 @@
 (library
  (name aoc202307)
  (modules solution)
+ (flags
+  (:standard -w +9+27+39))
  (libraries aoc core fmt)
  (inline_tests
   (deps test.txt))
