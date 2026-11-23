@@ -63,7 +63,11 @@ let neighbourhood_offset (tile : tile) : offset list =
   | Ground -> []
 ;;
 
-let ( +> ) ((i, j) : indices) ((di, dj) : offset) : indices = i + di, j + dj
+let ( >+> ) ((i, j) : indices) ((di, dj) : offset) : indices = i + di, j + dj
+
+let ( >-> ) ((i1, j1) : indices) ((i2, j2) : indices) : offset =
+  i2 - i1, j2 - j1
+;;
 
 let get_tile (field : field) (indices : indices) =
   let i, j = indices in
@@ -81,7 +85,7 @@ let rec find_neighbours (field : field) (indices : indices) : neighbourhood =
   let tile = get_tile field indices in
   tile
   |> neighbourhood_offset
-  |> List.map ~f:(fun offset -> indices +> offset)
+  |> List.map ~f:(fun offset -> indices >+> offset)
   |> List.filter_map ~f:(validate rows cols)
   |> List.filter_map ~f:(infer_connections field indices)
   |> List.sort ~compare:compare_indices
@@ -95,6 +99,37 @@ and infer_connections (field : field) (indices : indices) (neighbour : indices)
     then Some neighbour
     else None
   | _ -> Some neighbour
+;;
+
+let infer_tile (field : field) (indices : indices) : tile =
+  match get_tile field indices with
+  | Start ->
+    let offsets =
+      find_neighbours field indices
+      |> List.map ~f:(fun neighbour -> indices >-> neighbour)
+      |> List.sort ~compare:compare_offset
+    in
+    (match offsets with
+     | os
+       when List.equal equal_offset os [ north; south ]
+            || List.equal equal_offset os [ south; north ] -> Vertical
+     | os
+       when List.equal equal_offset os [ west; east ]
+            || List.equal equal_offset os [ east; west ] -> Horizontal
+     | os
+       when List.equal equal_offset os [ north; east ]
+            || List.equal equal_offset os [ east; north ] -> NorthEast
+     | os
+       when List.equal equal_offset os [ north; west ]
+            || List.equal equal_offset os [ west; north ] -> NorthWest
+     | os
+       when List.equal equal_offset os [ south; east ]
+            || List.equal equal_offset os [ east; south ] -> SouthEast
+     | os
+       when List.equal equal_offset os [ south; west ]
+            || List.equal equal_offset os [ west; south ] -> SouthWest
+     | _ -> failwith "UNREACHABLE")
+  | tile -> tile
 ;;
 
 (* BFS por camadas: [frontier] guarda as casas a [distance] passos do início.
@@ -118,22 +153,27 @@ let bfs (field : field) (start : indices) : int =
 ;;
 
 let dfs (field : field) (start : indices) : neighbourhood =
-  let rec loop (field : field) (current : indices) (path : neighbourhood)
-    : neighbourhood
+  let rec step (queue : neighbourhood) (visited : neighbourhood) : neighbourhood
     =
-    let neighbours =
-      find_neighbours field current
-      |> List.filter ~f:(fun neighbour ->
-        not (List.mem path neighbour ~equal:equal_indices))
-    in
-    match neighbours with
-    | [] -> path
-    | _ ->
-      List.map neighbours ~f:(fun neighbour ->
-        loop field neighbour (neighbour :: path))
-      |> List.hd_exn
+    match queue with
+    | next :: rest ->
+      let neighbours =
+        find_neighbours field next
+        |> List.filter ~f:(fun neighbour ->
+          not (List.mem visited neighbour ~equal:equal_indices))
+      in
+      let visited =
+        neighbours
+        |> List.fold ~init:visited ~f:(fun acc neighbour -> neighbour :: acc)
+      in
+      let queue =
+        neighbours
+        |> List.fold ~init:rest ~f:(fun acc neighbour -> neighbour :: acc)
+      in
+      step queue visited
+    | [] -> visited
   in
-  loop field start []
+  step [ start ] [ start ]
 ;;
 
 let solve_part_one (input : string) : string =
@@ -259,5 +299,8 @@ let%expect_test "AoC 2023: Day 10 - part 1" =
   [%expect {| Part 1 (B): 8 |}];
   let input = Aoc.Common.Input.read_lines "test-1C.txt" in
   Printf.printf "Part 1 (C): %s\n" (solve_part_one input);
+  [%expect {| Part 1 (C): 4 |}];
+  let input = Aoc.Common.Input.read_lines "test-1A.txt" in
+  Printf.printf "Part 1 (C): %s\n" (solve_part_two input);
   [%expect {| Part 1 (C): 4 |}]
 ;;
