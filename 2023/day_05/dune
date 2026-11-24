@@ -1,7 +1,7 @@
 (library
  (name aoc202305)
  (modules solution)
- (libraries aoc)
+ (libraries aoc core)
  (inline_tests
   (deps test.txt))
  (preprocess
